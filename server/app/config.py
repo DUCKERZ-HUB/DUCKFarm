@@ -17,6 +17,11 @@ CONFIG = {
     # 'SYSTEM_URL': 'http://monitor.ructfe.org/flags',
     # 'SYSTEM_TOKEN': '275_17fc104dd58d429ec11b4a5e82041cd2',
 
+    #  ctf01d
+    # 'SYSTEM_URL': http://192.168.1.10:8080/flag
+    # 'TEAM_ID': 'duckerz'
+    
+
     'SYSTEM_PROTOCOL': 'forcad_tcp',
     'SYSTEM_HOST': '10.10.10.10',
     'SYSTEM_PORT': '31337',
