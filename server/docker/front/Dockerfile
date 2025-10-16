@@ -2,6 +2,7 @@ FROM node:20-slim AS front-base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+RUN corepack use pnpm@8.15.0
 
 COPY front /app
 WORKDIR /app
