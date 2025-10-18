@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 TIMEOUT = 5
 
 def submit_flags(flags, config):
-    for (flag in flags):
-        r = requests.get(f"{config['SYSTEM_URL']}?teamid={config['TEAM_ID']}&flag={flag}", 
+    for flag in flags:
+        r = requests.get(f"{config['SYSTEM_URL']}?teamid={config['TEAM_ID']}&flag={flag.flag}", 
                          timeout=TIMEOUT)
 
         if r.status_code == 200:
@@ -17,4 +17,4 @@ def submit_flags(flags, config):
         else:
             found_status = FlagStatus.REJECTED
          
-        yield SubmitResult(flag, found_status, r.text)
+        yield SubmitResult(flag.flag, found_status, r.text)
