@@ -26,6 +26,11 @@ CONFIG = {
     'SYSTEM_HOST': '10.10.10.10',
     'SYSTEM_PORT': '31337',
     'TEAM_TOKEN': '4fdcd6e54faa8991',
+
+    # 'SYSTEM_PROTOCOL': 'forcad_http',
+    # 'SYSTEM_URL': 'http://10.10.10.10:8080/flags',
+    # 'TEAM_TOKEN': '4fdcd6e54faa8991',
+
     # 'SYSTEM_PROTOCOL': 'volgactf',
     # 'SYSTEM_VALIDATOR': 'volgactf',
     # 'SYSTEM_HOST': 'final.volgactf.ru',
