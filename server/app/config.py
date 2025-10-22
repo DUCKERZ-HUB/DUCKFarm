@@ -18,9 +18,9 @@ CONFIG = {
     # 'SYSTEM_TOKEN': '275_17fc104dd58d429ec11b4a5e82041cd2',
 
     # 'SYSTEM_PROTOCOL': 'ctf01d',
-    # 'SYSTEM_URL': http://192.168.1.10:8080/flag,
+    # 'SYSTEM_URL': 'http://192.168.1.10:8080/flag',
     # 'TEAM_ID': 'duckerz',
-    # 'FLAG_FORMAT': r'^c01d[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}[0-9]{8}$'
+    # 'FLAG_FORMAT': r'^c01d[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}[0-9]{8}$',
 
     'SYSTEM_PROTOCOL': 'forcad_tcp',
     'SYSTEM_HOST': '10.10.10.10',
