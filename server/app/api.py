@@ -6,6 +6,7 @@ from datetime import datetime
 import redis.exceptions
 from flask import request, jsonify, Blueprint
 from prometheus_client import Counter, Gauge
+from psycopg2.extras import execute_values
 
 import auth
 import reloader
@@ -47,29 +48,29 @@ def post_flags():
         flags = validator_module.validate_flags(flags, config)
 
     rows = [
-        {
-            'flag': flag['flag'],
-            'sploit': flag['sploit'],
-            'team': flag['team'],
-            'time': cur_time,
-            'status': FlagStatus.QUEUED.name,
-        }
+        (flag['flag'], flag['sploit'], flag['team'], cur_time, FlagStatus.QUEUED.name)
         for flag in flags
     ]
 
-    with db_cursor() as (conn, curs):
-        curs.executemany(
-            """
-            INSERT INTO flags (flag, sploit, team, time, status)
-            VALUES (%(flag)s, %(sploit)s, %(team)s, %(time)s, %(status)s)
-            ON CONFLICT DO NOTHING
-            """,
-            rows,
-        )
-        conn.commit()
+    if rows:
+        with db_cursor(False) as (conn, curs):
+            # Bound statement size without paying for one database round trip per flag.
+            execute_values(
+                curs,
+                """
+                INSERT INTO flags (flag, sploit, team, time, status)
+                VALUES %s ON CONFLICT DO NOTHING
+                """,
+                rows,
+                page_size=5000,
+            )
+            conn.commit()
 
-    for flag in flags:
-        FLAGS_RECEIVED.labels(sploit=flag['sploit'], team=flag['team']).inc()
+    received_by_source = defaultdict(int)
+    for _, sploit, team, _, _ in rows:
+        received_by_source[sploit, team] += 1
+    for (sploit, team), count in received_by_source.items():
+        FLAGS_RECEIVED.labels(sploit=sploit, team=team).inc(count)
 
     return ''
 

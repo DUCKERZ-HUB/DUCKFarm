@@ -53,6 +53,9 @@ def db_cursor(dict_cursor: bool = True):
         curs = conn.cursor()
     try:
         yield conn, curs
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         curs.close()
         db_pool.putconn(conn)

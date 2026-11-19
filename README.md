@@ -30,6 +30,18 @@ sortable. **Received** counts unique flags stored by the farm; **Accepted**
 counts flags accepted by the checksystem. The 10-minute columns use the flag's
 time of receipt and refresh every 30 seconds.
 
+## Flag ingestion
+
+The server inserts flags in SQL batches and still ignores duplicate flags.
+The runner posts as soon as flags arrive and drains a backlog without a fixed
+delay between successful batches. It waits 5 seconds after a transient failure;
+on HTTP 413 it halves the batch and retries immediately. The bundled nginx
+proxy accepts request bodies up to 4 MiB. The runner keeps exact seen-flag
+deduplication for its lifetime, so this set can still grow during long,
+high-volume runs.
+Ingest speed is separate from checksystem submission speed, which remains
+limited by `SUBMIT_FLAG_LIMIT` and `SUBMIT_PERIOD` in the server config.
+
 Some screenshots:
 
 ![flags](resources/flags.png)

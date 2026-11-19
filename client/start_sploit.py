@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from math import ceil
@@ -243,6 +244,10 @@ class APIException(Exception):
     pass
 
 
+class PayloadTooLarge(APIException):
+    pass
+
+
 SERVER_TIMEOUT = 5
 
 
@@ -286,6 +291,8 @@ def post_flags(args, flags):
     url = urljoin(args.server_url, '/api/post_flags')
     headers = get_auth_headers(args)
     r = requests.post(url, headers=headers, json=data, timeout=SERVER_TIMEOUT)
+    if r.status_code == 413:
+        raise PayloadTooLarge('The server rejected a batch of {} flags (HTTP 413)'.format(len(flags)))
     if not r.ok:
         raise APIException(r.text)
 
@@ -315,8 +322,9 @@ class FlagStorage:
 
     def __init__(self):
         self._flags_seen = set()
-        self._queue = []
+        self._queue = deque()
         self._lock = threading.RLock()
+        self._available = threading.Event()
 
     def add(self, flags, team_name):
         with self._lock:
@@ -324,14 +332,22 @@ class FlagStorage:
                 if item not in self._flags_seen:
                     self._flags_seen.add(item)
                     self._queue.append({'flag': item, 'team': team_name})
+            if self._queue:
+                self._available.set()
 
     def pick_flags(self, count):
         with self._lock:
-            return self._queue[:count]
+            return list(itertools.islice(self._queue, count))
 
     def mark_as_sent(self, count):
         with self._lock:
-            self._queue = self._queue[count:]
+            for _ in range(min(count, len(self._queue))):
+                self._queue.popleft()
+            if not self._queue:
+                self._available.clear()
+
+    def wait_for_flags(self, timeout):
+        return self._available.wait(timeout)
 
     @property
     def queue_size(self):
@@ -341,7 +357,7 @@ class FlagStorage:
 
 flag_storage = FlagStorage()
 
-POST_PERIOD = 5
+POST_PERIOD = 5  # Retry backoff; successful batches drain without a fixed delay.
 POST_FLAG_LIMIT = 10000
 
 
@@ -350,8 +366,11 @@ POST_FLAG_LIMIT = 10000
 
 def run_post_loop(args):
     try:
-        for _ in once_in_a_period(POST_PERIOD):
-            flags_to_post = flag_storage.pick_flags(POST_FLAG_LIMIT)
+        batch_limit = POST_FLAG_LIMIT
+        while not exit_event.is_set():
+            if not flag_storage.wait_for_flags(0.5) or exit_event.is_set():
+                continue
+            flags_to_post = flag_storage.pick_flags(batch_limit)
 
             if flags_to_post:
                 try:
@@ -360,9 +379,17 @@ def run_post_loop(args):
                     flag_storage.mark_as_sent(len(flags_to_post))
                     logging.info('{} flags posted to the server ({} in the queue)'.format(
                         len(flags_to_post), flag_storage.queue_size))
+                except PayloadTooLarge as e:
+                    if batch_limit > 1:
+                        batch_limit = max(1, batch_limit // 2)
+                        logging.warning('%s; retrying with at most %s flags', e, batch_limit)
+                    else:
+                        logging.error('%s; even one flag is too large', e)
+                        exit_event.wait(POST_PERIOD)
                 except Exception as e:
                     logging.error("Can't post flags to the server: {}".format(repr(e)))
                     logging.info("The flags will be posted next time")
+                    exit_event.wait(POST_PERIOD)
     except Exception as e:
         logging.critical('Posting loop died: {}'.format(repr(e)))
         shutdown()
@@ -383,10 +410,10 @@ def display_sploit_output(team_name, output_lines):
 
 def process_sploit_output(stream, args, team_name, flag_format, attack_no):
     try:
+        verbose = attack_no <= args.verbose_attacks
         output_lines = []
         instance_flags = set()
-
-        line_cnt = 1
+        had_output = False
 
         while True:
             line = stream.readline()
@@ -394,26 +421,29 @@ def process_sploit_output(stream, args, team_name, flag_format, attack_no):
                 break
 
             line = line.decode(errors='replace')
-            output_lines.append(line)
+            if verbose:
+                output_lines.append(line)
+                had_output = True
 
             line_flags = set(flag_format.findall(line))
             if line_flags:
                 flag_storage.add(line_flags, team_name)
-                instance_flags |= line_flags
+                if verbose:
+                    instance_flags.update(line_flags)
 
-            if args.endless and line_cnt <= args.verbose_attacks * VERBOSE_LINES:
-                line_cnt += 1
+            if verbose and len(output_lines) >= VERBOSE_LINES:
                 display_sploit_output(team_name, output_lines)
-                output_lines = []
+                output_lines.clear()
                 if instance_flags:
                     logging.info('Got {} flags from "{}": {}'.format(
                         len(instance_flags), team_name, instance_flags))
-                    instance_flags = set()
+                    instance_flags.clear()
 
-        if attack_no <= args.verbose_attacks and not exit_event.is_set():
+        if verbose and not exit_event.is_set():
             # We don't want to spam the terminal on KeyboardInterrupt
 
-            display_sploit_output(team_name, output_lines)
+            if output_lines or not had_output:
+                display_sploit_output(team_name, output_lines)
             if instance_flags:
                 logging.info('Got {} flags from "{}": {}'.format(
                     len(instance_flags), team_name, instance_flags))
