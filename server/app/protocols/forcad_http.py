@@ -18,7 +18,7 @@ TIMEOUT = 5
 
 def submit_flags(flags, config):
     r = requests.put(config['SYSTEM_URL'],
-                     headers={'X-Team-Token': config['SYSTEM_TOKEN'], 'Content-Type': 'application/json'},
+                     headers={'X-Team-Token': config['TEAM_TOKEN'], 'Content-Type': 'application/json'},
                      json=[item.flag for item in flags], timeout=TIMEOUT)
 
     unknown_responses = set()
