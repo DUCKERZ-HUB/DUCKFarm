@@ -15,7 +15,7 @@ dependencies:
     specifier: ^2.29.4
     version: 2.29.4
   quasar:
-    specifier: ^2.12.5
+    specifier: 2.12.5
     version: 2.12.5
   vue:
     specifier: ^3.3.4

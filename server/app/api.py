@@ -74,6 +74,78 @@ def post_flags():
     return ''
 
 
+@api.route('/sploits', methods=['POST'])
+@auth.auth_required
+def register_sploit():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({'error': 'Expected a JSON object'}), 400
+
+    name = payload.get('name')
+    if not isinstance(name, str) or not name or len(name) > 255:
+        return jsonify({'error': 'name must be a non-empty string of at most 255 characters'}), 400
+
+    description = payload.get('description')
+    if 'description' in payload and (
+        not isinstance(description, str) or len(description) > 1024
+    ):
+        return jsonify({'error': 'description must be a string of at most 1024 characters'}), 400
+
+    with db_cursor(False) as (conn, curs):
+        if 'description' in payload:
+            curs.execute(
+                """
+                INSERT INTO sploits (name, description) VALUES (%s, %s)
+                ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description
+                """,
+                (name, description),
+            )
+        else:
+            curs.execute(
+                'INSERT INTO sploits (name) VALUES (%s) ON CONFLICT DO NOTHING',
+                (name,),
+            )
+        conn.commit()
+
+    return '', 204
+
+
+@api.route('/sploits', methods=['GET'])
+@auth.auth_required
+def get_sploits():
+    cutoff = int(time.time()) - 600
+    with db_cursor(True) as (_, curs):
+        curs.execute(
+            """
+            SELECT
+                COALESCE(s.name, stats.sploit) AS name,
+                COALESCE(s.description, '') AS description,
+                COALESCE(stats.received_total, 0) AS received_total,
+                COALESCE(stats.received_last_10m, 0) AS received_last_10m,
+                COALESCE(stats.accepted_total, 0) AS accepted_total,
+                COALESCE(stats.accepted_last_10m, 0) AS accepted_last_10m
+            FROM sploits AS s
+            FULL OUTER JOIN (
+                SELECT
+                    sploit,
+                    COUNT(*) AS received_total,
+                    COUNT(*) FILTER (WHERE time >= %s) AS received_last_10m,
+                    COUNT(*) FILTER (WHERE status = %s) AS accepted_total,
+                    COUNT(*) FILTER (WHERE status = %s AND time >= %s) AS accepted_last_10m
+                FROM flags
+                WHERE sploit IS NOT NULL
+                GROUP BY sploit
+            ) AS stats ON stats.sploit = s.name
+            WHERE s.name IS NOT NULL OR stats.sploit <> 'Manual'
+            ORDER BY LOWER(COALESCE(s.name, stats.sploit)), COALESCE(s.name, stats.sploit)
+            """,
+            (cutoff, FlagStatus.ACCEPTED.name, FlagStatus.ACCEPTED.name, cutoff),
+        )
+        rows = curs.fetchall()
+
+    return jsonify([dict(row) for row in rows])
+
+
 @api.route('/filter_flags', methods=['GET'])
 @auth.auth_required
 def get_filtered_flags():

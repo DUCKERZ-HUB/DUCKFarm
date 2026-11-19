@@ -8,18 +8,21 @@
         <q-input
           outlined
           v-model="text"
-          label="Text with flags"
+          aria-label="Text with flags"
+          placeholder="Text with flags"
           type="textarea"
-          :hint="'flag format: ' + flagFormat"
+          :hint="'flag format: ' + (flagFormat || '')"
           ><template v-if="text" v-slot:append>
             <q-icon
-              name="cancel"
+              name="close"
+              size="18px"
+              color="primary"
               @click.stop="text = null"
               class="cursor-pointer"
             /> </template
         ></q-input>
         <div class="q-pt-md">
-          <q-btn label="Submit" type="submit" color="cbs" />
+          <q-btn label="Submit" type="submit" color="primary" />
         </div>
       </q-form>
     </q-card-section>

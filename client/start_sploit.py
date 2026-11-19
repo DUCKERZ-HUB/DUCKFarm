@@ -83,6 +83,8 @@ def parse_args():
                         help='Server URL')
     parser.add_argument('--server-pass', metavar='PASS', default='1234',
                         help='Server password')
+    parser.add_argument('--description', metavar='TEXT',
+                        help='Description shown in DuckFarm (maximum 1024 characters)')
     parser.add_argument('--interpreter', metavar='COMMAND',
                         help='Explicitly specify sploit interpreter (use on Windows, which doesn\'t '
                              'understand shebangs)')
@@ -114,6 +116,9 @@ def parse_args():
 
 def fix_args(args):
     check_sploit(args)
+
+    if args.description is not None and len(args.description) > 1024:
+        raise ValueError('--description must be at most 1024 characters')
 
     if '://' not in args.server_url:
         args.server_url = 'http://' + args.server_url
@@ -254,6 +259,18 @@ def get_config(args):
         raise APIException(r.text)
 
     return r.json()
+
+
+def register_sploit(args):
+    data = {'name': os.path.basename(args.sploit)}
+    if args.description is not None:
+        data['description'] = args.description
+
+    url = urljoin(args.server_url, '/api/sploits')
+    r = requests.post(url, headers=get_auth_headers(args), json=data,
+                      timeout=SERVER_TIMEOUT)
+    if not r.ok:
+        raise APIException(r.text)
 
 
 def post_flags(args, flags):
@@ -562,6 +579,7 @@ def main(args):
     threading.Thread(target=lambda: run_post_loop(args)).start()
 
     config = flag_format = None
+    sploit_registered = False
     pool = ThreadPoolExecutor(max_workers=args.pool_size)
 
     if args.endless:
@@ -579,6 +597,15 @@ def main(args):
             if attack_no == 1:
                 return
             logging.info('Using the old config')
+
+        if not sploit_registered:
+            try:
+                register_sploit(args)
+                sploit_registered = True
+                logging.info('Registered sploit {} in DuckFarm'.format(os.path.basename(args.sploit)))
+            except Exception as e:
+                logging.warning('Could not register sploit; will retry: {}'.format(repr(e)))
+
         teams = get_target_teams(args, config['TEAMS'], attack_no)
         if not teams:
             if attack_no == 1:

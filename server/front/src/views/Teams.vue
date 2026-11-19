@@ -1,8 +1,6 @@
 <template>
-  <q-page class="q-pa-md"
-    ><div class="row justify-between q-col-gutter-md">
-      <div class="col col-12"><teams-table /></div>
-    </div>
+  <q-page class="q-pa-md farm-page farm-list-page">
+    <teams-table />
   </q-page>
 </template>
 

@@ -1,17 +1,17 @@
 <template>
   <q-table
+    class="farm-bounded-table"
     virtual-scroll
     dense
     :rows="teams"
     :columns="columns"
     :rows-per-page-options="[0]"
-    style="height: 80vh"
     row-key="name"
     no-data-label="No teams to attack"
-    table-header-class="bg-cbs text-cbs"
+    table-header-class="bg-primary text-white"
   >
     <template v-slot:no-data="{ message }">
-      <div class="full-width row flex-center text-accent q-gutter-sm">
+      <div class="full-width row flex-center text-primary q-gutter-sm">
         <q-icon size="2em" name="sentiment_dissatisfied" />
         <span> Well this is sad... {{ message }} </span>
       </div>

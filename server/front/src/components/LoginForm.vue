@@ -8,15 +8,17 @@
         <div class="row">
           <div class="col col-12">
             <q-input
+              dense
               outlined
               v-model="password"
               type="password"
-              label="Password"
+              aria-label="Password"
+              placeholder="Password"
             ></q-input>
           </div>
         </div>
         <div class="q-pt-md">
-          <q-btn label="Submit" type="submit" color="cbs" />
+          <q-btn label="Submit" type="submit" color="primary" />
         </div>
       </q-form>
     </q-card-section>

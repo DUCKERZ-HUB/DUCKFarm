@@ -6,7 +6,7 @@
     <q-btn
       v-if="pagesNumber > 2"
       icon="first_page"
-      color="grey-8"
+      color="primary"
       round
       dense
       flat
@@ -16,7 +16,7 @@
 
     <q-btn
       icon="chevron_left"
-      color="grey-8"
+      color="primary"
       round
       dense
       flat
@@ -26,7 +26,7 @@
 
     <q-btn
       icon="chevron_right"
-      color="grey-8"
+      color="primary"
       round
       dense
       flat
@@ -36,7 +36,7 @@
     <q-btn
       v-if="pagesNumber > 2"
       icon="last_page"
-      color="grey-8"
+      color="primary"
       round
       dense
       flat

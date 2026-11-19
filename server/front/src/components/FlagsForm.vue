@@ -4,45 +4,59 @@
       <div class="text-h6">Filter flags</div>
     </q-card-section>
     <q-card-section>
-      <q-form @submit.prevent="onSubmit">
+      <q-form class="flags-filter-form" @submit.prevent="onSubmit">
         <div class="row">
-          <div class="col col-4 q-px-sm">
+          <div class="col-12 col-sm-4 q-px-sm q-pb-sm">
             <q-select
+              dense
               outlined
               v-model="sploit"
               :options="sploitOptions"
-              label="Sploit"
+              aria-label="Sploit"
+              :display-value="sploit || 'Sploit'"
+              :class="{ 'empty-select': !sploit }"
               ><template v-if="sploit" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="sploit = null"
                   class="cursor-pointer"
                 /> </template
             ></q-select>
           </div>
-          <div class="col col-4 q-px-sm">
+          <div class="col-12 col-sm-4 q-px-sm q-pb-sm">
             <q-select
+              dense
               outlined
               v-model="team"
               :options="teamOptions"
-              label="Team"
+              aria-label="Team"
+              :display-value="team || 'Team'"
+              :class="{ 'empty-select': !team }"
               ><template v-if="team" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="team = null"
                   class="cursor-pointer"
                 /> </template
             ></q-select>
           </div>
-          <div class="col col-4 q-px-sm">
+          <div class="col-12 col-sm-4 q-px-sm q-pb-sm">
             <q-input
+              dense
               outlined
               v-model="flag"
-              label="Flag"
+              aria-label="Flag"
+              placeholder="Flag"
               hint="substring, case-insensitive"
               ><template v-if="flag" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="flag = null"
                   class="cursor-pointer"
                 /> </template
@@ -50,59 +64,74 @@
           </div>
         </div>
         <div class="row q-pt-md">
-          <div class="col col-3 q-px-sm">
+          <div class="col-12 col-sm-6 col-md-3 q-px-sm q-pb-sm">
             <q-input
+              dense
               outlined
               v-model="since"
-              label="Since"
-              :hint="serverTZ"
-              placeholder="yyyy-mm-dd hh:mm"
+              aria-label="Since"
+              placeholder="Since"
+              :hint="'yyyy-mm-dd hh:mm (' + (serverTZ || 'UTC') + ')'"
               ><template v-if="since" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="since = null"
                   class="cursor-pointer"
                 /> </template
             ></q-input>
           </div>
-          <div class="col col-3 q-px-sm">
+          <div class="col-12 col-sm-6 col-md-3 q-px-sm q-pb-sm">
             <q-input
+              dense
               outlined
               v-model="until"
-              label="Until"
-              :hint="serverTZ"
-              placeholder="yyyy-mm-dd hh:mm"
+              aria-label="Until"
+              placeholder="Until"
+              :hint="'yyyy-mm-dd hh:mm (' + (serverTZ || 'UTC') + ')'"
               ><template v-if="until" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="until = null"
                   class="cursor-pointer"
                 /> </template
             ></q-input>
           </div>
-          <div class="col col-2 q-px-sm">
+          <div class="col-12 col-sm-6 col-md-2 q-px-sm q-pb-sm">
             <q-select
+              dense
               outlined
               v-model="status"
               :options="statusOptions"
-              label="Status"
+              aria-label="Status"
+              :display-value="status || 'Status'"
+              :class="{ 'empty-select': !status }"
               ><template v-if="status" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="status = null"
                   class="cursor-pointer"
                 /> </template
             ></q-select>
           </div>
-          <div class="col col-4 q-px-sm">
+          <div class="col-12 col-sm-6 col-md-4 q-px-sm q-pb-sm">
             <q-input
+              dense
               outlined
               v-model="checksystemResponse"
-              label="Checksystem response"
+              aria-label="Checksystem response"
+              placeholder="Checksystem response"
               hint="substring, case-insensitive"
               ><template v-if="checksystemResponse" v-slot:append>
                 <q-icon
-                  name="cancel"
+                  name="close"
+                  size="18px"
+                  color="primary"
                   @click.stop="checksystemResponse = null"
                   class="cursor-pointer"
                 /> </template
@@ -110,7 +139,7 @@
           </div>
         </div>
         <div class="q-pt-md">
-          <q-btn label="Filter" type="submit" color="cbs" />
+          <q-btn label="Filter" type="submit" color="primary" />
         </div>
       </q-form>
     </q-card-section>

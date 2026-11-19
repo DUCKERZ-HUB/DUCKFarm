@@ -1,5 +1,6 @@
 <template>
   <q-table
+    class="farm-bounded-table"
     :rows="flags"
     :columns="columns"
     :rows-per-page-options="[flagsPerPage]"
@@ -7,7 +8,7 @@
     @request="onRequest"
     row-key="flag"
     no-data-label="No flags for you"
-    table-header-class="bg-cbs text-cbs"
+    table-header-class="bg-primary text-white"
     dense
   >
     <template v-slot:top="scope">
@@ -35,7 +36,7 @@
       />
     </template>
     <template v-slot:no-data="{ message }">
-      <div class="full-width row flex-center text-accent q-gutter-sm">
+      <div class="full-width row flex-center text-primary q-gutter-sm">
         <q-icon size="2em" name="sentiment_dissatisfied" />
         <span> Well this is sad... {{ message }} </span>
       </div>
