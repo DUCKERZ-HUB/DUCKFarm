@@ -8,7 +8,7 @@
     :rows-per-page-options="[0]"
     row-key="name"
     no-data-label="No teams to attack"
-    table-header-class="bg-primary text-white"
+    table-header-class="farm-table-header"
   >
     <template v-slot:no-data="{ message }">
       <div class="full-width row flex-center text-primary q-gutter-sm">

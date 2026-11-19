@@ -1,6 +1,6 @@
 <template>
   <q-table
-    class="farm-bounded-table"
+    class="farm-bounded-table flags-table"
     :rows="flags"
     :columns="columns"
     :rows-per-page-options="[flagsPerPage]"
@@ -8,8 +8,10 @@
     @request="onRequest"
     row-key="flag"
     no-data-label="No flags for you"
-    table-header-class="bg-primary text-white"
+    table-header-class="farm-table-header"
+    :grid="$q.screen.lt.sm"
     dense
+    wrap-cells
   >
     <template v-slot:top="scope">
       <div class="text-h6">{{ scope.pagination.rowsNumber }} flags total</div>
@@ -42,14 +44,14 @@
       </div>
     </template>
     <template v-slot:header-cell="props">
-      <q-th :props="props" :style="{ textAlign: 'center' }">
+      <q-th :props="props" :class="'flag-col-' + props.col.name" :style="{ textAlign: 'center' }">
         {{ props.col.label }}
       </q-th>
     </template>
     <template v-slot:body-cell="props">
-      <q-td :props="props">
-        <div>
-          {{ props.value }}
+      <q-td :props="props" :class="'flag-col-' + props.col.name">
+        <div class="flag-cell">
+          <span class="flag-cell-value">{{ props.value }}</span>
           <q-btn
             size="sm"
             flat
@@ -60,6 +62,26 @@
           />
         </div>
       </q-td>
+    </template>
+    <template v-slot:item="props">
+      <div class="col-12 q-pa-xs">
+        <q-card class="q-pa-sm">
+          <div v-for="col in props.cols" :key="col.name" class="flag-grid-row">
+            <span class="flag-grid-label">{{ col.label }}</span>
+            <span class="flag-grid-value">
+              <span>{{ col.value || "-" }}</span>
+              <q-btn
+                v-if="copyableColumns.includes(col.name)"
+                size="xs"
+                flat
+                round
+                icon="content_copy"
+                @click="copyToClipboard(col.value)"
+              />
+            </span>
+          </div>
+        </q-card>
+      </div>
     </template>
     <template v-slot:pagination="scope">
       <pagination-custom
@@ -96,7 +118,7 @@ export default {
           label: "Time",
           field: "time",
           align: "center",
-          format: (val) => moment.unix(val).format("MMMM Do YYYY, HH:mm:ss"),
+          format: (val) => moment.unix(val).format("YYYY-MM-DD HH:mm:ss"),
         },
         { name: "status", label: "Status", field: "status", align: "center" },
         {
@@ -138,4 +160,68 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.flags-table :deep(.q-table) {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.flags-table :deep(.q-table th),
+.flags-table :deep(.q-table td) {
+  padding: 4px 6px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.flags-table :deep(.flag-col-sploit) { width: 14%; }
+.flags-table :deep(.flag-col-team) { width: 7%; }
+.flags-table :deep(.flag-col-flag) { width: 30%; }
+.flags-table :deep(.flag-col-time) { width: 21%; }
+.flags-table :deep(.flag-col-status) { width: 10%; }
+.flags-table :deep(.flag-col-checksystemResponse) { width: 18%; }
+
+.flag-cell {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.flag-cell-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.flag-grid-row {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.flag-grid-row + .flag-grid-row {
+  border-top: 1px solid var(--farm-divider);
+}
+
+.flag-grid-label {
+  flex: 0 0 105px;
+  font-family: "Tilda Sans Bold", sans-serif;
+}
+
+.flag-grid-value {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.flag-grid-value > span {
+  min-width: 0;
+}
+
+.flags-table :deep(.q-table__grid-content) {
+  min-height: 0;
+  overflow-y: auto;
+}
+</style>

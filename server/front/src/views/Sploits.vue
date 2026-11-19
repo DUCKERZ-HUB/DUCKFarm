@@ -13,7 +13,7 @@
       :rows-per-page-options="[0]"
       row-key="name"
       no-data-label="No sploits registered yet"
-      table-header-class="bg-primary text-white"
+      table-header-class="farm-table-header"
     >
       <template v-slot:body-cell-description="props">
         <q-td :props="props">

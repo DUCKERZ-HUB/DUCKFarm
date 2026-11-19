@@ -64,14 +64,15 @@
           </div>
         </div>
         <div class="row q-pt-md">
-          <div class="col-12 col-sm-6 col-md-3 q-px-sm q-pb-sm">
+          <div class="col-12 col-sm-3 q-px-sm q-pb-sm">
             <q-input
               dense
               outlined
               v-model="since"
               aria-label="Since"
               placeholder="Since"
-              :hint="'yyyy-mm-dd hh:mm (' + (serverTZ || 'UTC') + ')'"
+              :hint="serverTZ || 'UTC'"
+              title="Format: yyyy-mm-dd hh:mm"
               ><template v-if="since" v-slot:append>
                 <q-icon
                   name="close"
@@ -82,14 +83,15 @@
                 /> </template
             ></q-input>
           </div>
-          <div class="col-12 col-sm-6 col-md-3 q-px-sm q-pb-sm">
+          <div class="col-12 col-sm-3 q-px-sm q-pb-sm">
             <q-input
               dense
               outlined
               v-model="until"
               aria-label="Until"
               placeholder="Until"
-              :hint="'yyyy-mm-dd hh:mm (' + (serverTZ || 'UTC') + ')'"
+              :hint="serverTZ || 'UTC'"
+              title="Format: yyyy-mm-dd hh:mm"
               ><template v-if="until" v-slot:append>
                 <q-icon
                   name="close"
@@ -100,7 +102,7 @@
                 /> </template
             ></q-input>
           </div>
-          <div class="col-12 col-sm-6 col-md-2 q-px-sm q-pb-sm">
+          <div class="col-12 col-sm-2 q-px-sm q-pb-sm">
             <q-select
               dense
               outlined
@@ -119,7 +121,7 @@
                 /> </template
             ></q-select>
           </div>
-          <div class="col-12 col-sm-6 col-md-4 q-px-sm q-pb-sm">
+          <div class="col-12 col-sm-4 q-px-sm q-pb-sm">
             <q-input
               dense
               outlined
@@ -180,6 +182,7 @@ export default {
       this.setFlagFilters(filters);
       this.setSelectedPage(1);
       await this.fetchFlags();
+      this.$emit("submitted");
     },
     ...mapActions(["fetchFlags"]),
     ...mapMutations(["setSelectedPage", "setFlagFilters"]),
@@ -190,6 +193,7 @@ export default {
     statusOptions: "statusFilterOptions",
     serverTZ: "serverTZ",
   }),
+  emits: ["submitted"],
 };
 </script>
 

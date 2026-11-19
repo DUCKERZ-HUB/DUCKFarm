@@ -11,6 +11,7 @@
           aria-label="Text with flags"
           placeholder="Text with flags"
           type="textarea"
+          rows="3"
           :hint="'flag format: ' + (flagFormat || '')"
           ><template v-if="text" v-slot:append>
             <q-icon
@@ -50,6 +51,7 @@ export default {
         const newFilters = { sploit: "Manual" };
         this.setFlagFilters(newFilters);
         await this.updatePage(1);
+        this.$emit("submitted");
       } catch (e) {
         console.error("Error sending manual flags", e);
       }
@@ -58,6 +60,7 @@ export default {
     ...mapMutations(["setFlagFilters"]),
   },
   computed: mapState(["flagFormat"]),
+  emits: ["submitted"],
 };
 </script>
 

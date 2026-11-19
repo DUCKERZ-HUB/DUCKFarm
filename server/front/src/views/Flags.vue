@@ -1,12 +1,26 @@
 <template>
   <q-page class="q-pa-md farm-page flags-page">
+    <div class="compact-actions">
+      <q-btn label="Filter flags" color="primary" @click="filtersOpen = true" />
+      <q-btn label="Submit manually" color="primary" @click="manualOpen = true" />
+    </div>
     <div class="row justify-between q-col-gutter-md flags-controls">
-      <div class="col col-12 col-md-8"><flags-form /></div>
-      <div class="col col-12 col-md-4"><flags-submit /></div>
+      <div class="col-12"><flags-form /></div>
+      <div class="col-12"><flags-submit /></div>
     </div>
     <div class="flags-list">
       <flags-table />
     </div>
+    <q-dialog v-model="filtersOpen">
+      <div class="farm-form-dialog">
+        <flags-form @submitted="filtersOpen = false" />
+      </div>
+    </q-dialog>
+    <q-dialog v-model="manualOpen">
+      <div class="farm-form-dialog">
+        <flags-submit @submitted="manualOpen = false" />
+      </div>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -18,6 +32,9 @@ import { mapActions } from "vuex";
 import { flagsPerPage } from "@/config";
 export default {
   components: { FlagsForm, FlagsSubmit, FlagsTable },
+  data() {
+    return { filtersOpen: false, manualOpen: false };
+  },
   methods: mapActions(["fetchFlags"]),
   created: async function () {
     await this.fetchFlags({ page: 1, pageSize: flagsPerPage });
@@ -33,8 +50,11 @@ export default {
 
 .flags-controls {
   flex: 0 0 auto;
-  max-height: 60%;
-  overflow-y: auto;
+  overflow: visible;
+}
+
+.compact-actions {
+  display: none;
 }
 
 .flags-controls > .col {
@@ -52,5 +72,32 @@ export default {
   flex-direction: column;
   min-height: 0;
   padding-top: 16px;
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+  .flags-controls :deep(.q-card) {
+    padding: 8px;
+  }
+
+  .flags-controls :deep(.q-card__section) {
+    padding: 8px;
+  }
+
+  .flags-controls :deep(.q-pt-md) {
+    padding-top: 8px;
+  }
+}
+
+@media (max-width: 599px), (max-height: 929px) {
+  .flags-controls {
+    display: none;
+  }
+
+  .compact-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 }
 </style>
